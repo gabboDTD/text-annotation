@@ -26,10 +26,13 @@ Apri `http://localhost:8501` (o l'indirizzo indicato da Streamlit).
 
 1. Carica dall'app un file `.xlsx` con una colonna **`titolo`** (anche su un foglio diverso dal primo).
 2. L'app seleziona il primo titolo non ancora etichettato.
-3. Seleziona `Digitale`, `Non digitale` o `Non assegnata`, e compila eventualmente la nota.
+3. Per i titoli ancora privi di label, **Non digitale è già selezionato**: puoi premere direttamente **Salva e successivo** senza scegliere una voce. Se serve, seleziona `Digitale` o `Non assegnata`, e compila eventualmente la nota.
+   Le label esistenti vengono rispettate: un titolo già classificato Digitale rimane Digitale.
    Nell’Excel, **Digitale** viene salvato come `1` e **Non digitale** come `0` (la scelta non assegnata resta vuota).
 4. Premi **Salva**, **Salva e successivo** o **Precedente** per confermare le modifiche.
 5. Scarica l'Excel annotato. Puoi ricaricarlo successivamente per continuare.
+
+**Nota:** il valore pre-selezionato `Non digitale` non modifica automaticamente le righe che visualizzi: verrà scritto come `0` soltanto dopo aver premuto **Salva** o **Salva e successivo**.
 
 Le colonne **`label`** e **`note`** possono già esistere, o saranno create nell'Excel esportato. Le altre colonne e gli altri fogli vengono mantenuti.
 

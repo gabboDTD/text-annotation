@@ -130,11 +130,15 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-selected = LABEL_NAMES[item["label"]]
-choices = list(LABEL_VALUES)
+# Sui titoli privi di label, pre-seleziona 0 (Non digitale) per ridurre i clic.
+# La modifica viene confermata soltanto con Salva / Salva e successivo.
+# Per i titoli già annotati, conserva sempre la selezione letta dall'Excel.
+selected = LABEL_NAMES[item["label"]] if item["label"] is not None else "Non digitale"
+choices = ["Non digitale", "Digitale", "Non assegnata"]
 with st.form(key=f"edit_record_{item['excel_row']}", clear_on_submit=False):
     label = st.radio("Classificazione", choices, index=choices.index(selected), horizontal=True,
-                     help="Digitale viene salvato come 1, Non digitale come 0.")
+                     help="Non digitale (predefinito) viene salvato come 0; Digitale come 1. "
+                          "La label si registra quando premi Salva o Salva e successivo.")
     note = st.text_area("Nota (facoltativa)", value=item["note"], height=120,
                         placeholder="Motivazione, osservazione, dubbio...")
     back_col, save_col, next_col = st.columns([1, 1, 1.7])
