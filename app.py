@@ -12,6 +12,10 @@ from excel_io import export_annotations, read_records
 
 EXCEL_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
+# Le diciture mostrate nell'interfaccia sono diverse dai valori salvati nell'Excel.
+LABEL_VALUES = {"Non assegnata": None, "Digitale": 1, "Non digitale": 0}
+LABEL_NAMES = {value: text for text, value in LABEL_VALUES.items()}
+
 st.set_page_config(
     page_title="Annotatore di titoli", page_icon="🏷️", layout="centered",
     initial_sidebar_state="expanded",
@@ -44,13 +48,13 @@ def first_unlabeled(records: list[dict]) -> int:
 
 def save_record(index: int, label: str, note: str) -> None:
     item = st.session_state["records"][index]
-    item["label"] = None if label == "Non assegnata" else int(label)
+    item["label"] = LABEL_VALUES[label]
     item["note"] = note.strip()
     st.session_state["changed_rows"].add(item["excel_row"])
 
 
 st.title("🏷️ Annotazione titoli")
-st.caption("Carica un Excel, classifica un titolo alla volta con 1 o 0 e aggiungi note facoltative.")
+st.caption("Carica un Excel, classifica i titoli come Digitale o Non digitale e aggiungi note facoltative.")
 
 uploaded = st.file_uploader(
     "📂 Carica il file Excel da annotare", type=["xlsx"],
@@ -99,8 +103,8 @@ with st.sidebar:
     st.subheader("Avanzamento")
     st.progress(labeled / total, text=f"{labeled} su {total} classificati ({labeled / total:.0%})")
     col1, col2 = st.columns(2)
-    col1.metric("Label 1", ones)
-    col2.metric("Label 0", zeros)
+    col1.metric("Digitale (1)", ones)
+    col2.metric("Non digitale (0)", zeros)
     st.metric("Da etichettare", missing)
     st.caption(f"Foglio: {st.session_state['sheet_name']}")
     if st.button("Vai al primo senza label", use_container_width=True, disabled=missing == 0):
@@ -126,10 +130,11 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-selected = "Non assegnata" if item["label"] is None else str(item["label"])
-choices = ["Non assegnata", "1", "0"]
+selected = LABEL_NAMES[item["label"]]
+choices = list(LABEL_VALUES)
 with st.form(key=f"edit_record_{item['excel_row']}", clear_on_submit=False):
-    label = st.radio("Label", choices, index=choices.index(selected), horizontal=True)
+    label = st.radio("Classificazione", choices, index=choices.index(selected), horizontal=True,
+                     help="Digitale viene salvato come 1, Non digitale come 0.")
     note = st.text_area("Nota (facoltativa)", value=item["note"], height=120,
                         placeholder="Motivazione, osservazione, dubbio...")
     back_col, save_col, next_col = st.columns([1, 1, 1.7])
