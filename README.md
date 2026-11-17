@@ -1,43 +1,40 @@
-# Annotatore di titoli — Streamlit
+# Annotatore di titoli — Streamlit + pandas
 
-App Streamlit per caricare un file Excel e consultare i titoli, **uno alla volta**, assegnare una label **1** o **0**, aggiungere una nota facoltativa e scaricare l'Excel annotato.
+App Streamlit per caricare un Excel, vedere **un titolo alla volta**, assegnare label **1**, **0** o lasciarla vuota, aggiungere una nota facoltativa e scaricare l'Excel annotato.
 
-## Avvio
+## Avvio con Poetry
 
-1. Estrai lo ZIP e apri un terminale nella cartella `annotatore_titoli_streamlit`.
-2. Installa le dipendenze:
+Se hai già un `pyproject.toml`:
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+poetry add "streamlit>=1.33,<2" "pandas>=2.1,<3" "openpyxl>=3.1,<4"
+poetry run streamlit run app.py
+```
 
-3. Avvia l'app:
+Se non hai ancora un progetto Poetry, nella cartella estratta avvia prima `poetry init -n`.
 
-   ```bash
-   streamlit run app.py
-   ```
+## Alternativa con pip
 
-4. Apri l'indirizzo mostrato nel terminale (di solito `http://localhost:8501`).
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
 
-## Come si usa
+Apri `http://localhost:8501` (o l'indirizzo indicato da Streamlit).
 
-1. Fai clic su **Carica il file Excel da annotare** e seleziona dal tuo computer un file `.xlsx` con una colonna `titolo`.
-2. L'app apre il **primo titolo senza label** (o il primo titolo se tutti sono già etichettati).
-3. Seleziona `1`, `0` o `Non assegnata` e, se utile, aggiungi una nota.
-4. Premi **Salva e successivo →** per salvare e avanzare; **Salva** per restare sul titolo, **← Precedente** per tornare indietro salvando.
-5. Puoi usare la barra laterale per saltare a un numero di titolo o al primo titolo ancora senza label; salva prima eventuali modifiche non confermate.
-6. Premi **Scarica Excel annotato** per ottenere un nuovo file con suffisso `_annotato.xlsx`.
-7. Per riprendere il lavoro un altro giorno, **carica nell'app l'Excel annotato** scaricato precedentemente.
+## Utilizzo
 
-## Formato dell'Excel
+1. Carica dall'app un file `.xlsx` con una colonna **`titolo`** (anche su un foglio diverso dal primo).
+2. L'app seleziona il primo titolo non ancora etichettato.
+3. Seleziona `1`, `0` o `Non assegnata`, e compila eventualmente la nota.
+4. Premi **Salva**, **Salva e successivo** o **Precedente** per confermare le modifiche.
+5. Scarica l'Excel annotato. Puoi ricaricarlo successivamente per continuare.
 
-- Formato supportato: **`.xlsx`**.
-- Deve esserci una colonna **`titolo`** nell'intestazione delle prime 15 righe di un foglio; non è necessario che sia la prima colonna, e maiuscole/minuscole non contano.
-- Le colonne **`label`** e **`note`** possono già esistere o essere assenti: l'app le riconosce o le crea nel file esportato.
-- Le label sono salvate come valori numerici **0** o **1**; puoi modificarle anche quando sono già presenti.
-- Il file esportato conserva gli altri fogli e le altre colonne del file originale.
-- Non serve mettere alcun Excel nella cartella del progetto: **il caricamento avviene direttamente nell'app**.
+Le colonne **`label`** e **`note`** possono già esistere, o saranno create nell'Excel esportato. Le altre colonne e gli altri fogli vengono mantenuti.
 
-## Importante: salvataggio
+## Dettagli tecnici
 
-Le annotazioni vengono tenute nella sessione Streamlit. **Scarica periodicamente l'Excel annotato**: chiudere la sessione o caricare un file diverso può far perdere le modifiche non esportate. Inoltre l'esportazione comprende soltanto le modifiche confermate con i pulsanti di salvataggio.
+- Lettura: `pandas.read_excel(..., engine="openpyxl")`.
+- Esportazione: `pandas.ExcelWriter(..., mode="a", if_sheet_exists="overlay")`, con aggiornamento delle sole celle modificate del foglio originale. In questo modo si conservano altre colonne, formule, fogli e formattazione ordinaria (fatte salve le limitazioni del motore openpyxl con specifiche funzionalità Excel avanzate).
+- La modifica di un file diverso o la chiusura della sessione può far perdere le annotazioni non esportate: scarica periodicamente una copia.
+- Il formato supportato è `.xlsx`. La riga d'intestazione deve trovarsi entro le prime 15 righe, e il nome della colonna deve essere `titolo` (non conta la differenza maiuscole/minuscole).
